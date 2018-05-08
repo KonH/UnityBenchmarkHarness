@@ -7,9 +7,13 @@ namespace UnityBenchmarkHarness {
 			foreach ( var s in summaries ) {
 				var str = $"{s.Name}\n";
 				foreach ( var m in s.Measures ) {
-					str += string.Format(
-						"{0}: [{1:N}-{2:N}], avg. {3:N}\n",
-						m.Name, m.Min, m.Max, m.Avg);
+					if ( m.Min == m.Max ) {
+						str += string.Format("{0}: {1:N}\n", m.Name, m.Min);
+					} else {
+						str += string.Format(
+							"{0}: [{1:N}-{2:N}], avg: {3:N}\n",
+							m.Name, m.Min, m.Max, m.Avg);
+					}
 				}
 				Debug.Log(str);
 			}

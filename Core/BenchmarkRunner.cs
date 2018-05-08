@@ -6,6 +6,7 @@ namespace UnityBenchmarkHarness {
 	public class BenchmarkRunner {
 		Stopwatch _timer;
 		long      _startMem;
+		int       _startGcCount;
 
 		public static List<BenchmarkSummary> Run<TArgument>(
 			string name, int iterations, Action<TArgument> payload, params TArgument[] arguments
@@ -23,11 +24,16 @@ namespace UnityBenchmarkHarness {
 			return summaries;
 		}
 
+		static void PreRunGC() {
+			GC.Collect(0, GCCollectionMode.Forced, true, true);
+		}
+
 		static BenchmarkRunner Start() {
-			GC.Collect();
+			PreRunGC();
 			return new BenchmarkRunner() {
-				_startMem = GC.GetTotalMemory(false),
-				_timer    = Stopwatch.StartNew()
+				_startMem     = GC.GetTotalMemory(false),
+				_timer        = Stopwatch.StartNew(),
+				_startGcCount = GC.CollectionCount(0)
 			};
 		}
 
@@ -40,7 +46,8 @@ namespace UnityBenchmarkHarness {
 		BenchmarkResult Finish() {
 			_timer.Stop();
 			var memUsed = GC.GetTotalMemory(false) - _startMem;
-			return new BenchmarkResult(_timer.Elapsed.TotalMilliseconds, memUsed);
+			var gcCount = GC.CollectionCount(0)    - _startGcCount;
+			return new BenchmarkResult(_timer.Elapsed.TotalMilliseconds, memUsed, gcCount);
 		}
 	}
 }

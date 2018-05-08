@@ -14,7 +14,8 @@ namespace UnityBenchmarkHarness {
 		internal static BenchmarkSummary CombineResults(string name, ICollection<BenchmarkResult> results) {
 			var measures = new List<BenchmarkMeasure>() {
 				CreateTimeMeause(results),
-				CreateMemMeasure(results)
+				CreateMemMeasure(results),
+				CreateGcMeasure (results),
 			};
 			return new BenchmarkSummary(name, measures);
 		}
@@ -41,6 +42,10 @@ namespace UnityBenchmarkHarness {
 
 		static BenchmarkMeasure CreateMemMeasure(ICollection<BenchmarkResult> results) {
 			return CreateMeausure("Memory", r => r.Memory, results);
+		}
+
+		static BenchmarkMeasure CreateGcMeasure(ICollection<BenchmarkResult> results) {
+			return CreateMeausure("GC Count", r => r.GCCount, results);
 		}
 	}
 }
