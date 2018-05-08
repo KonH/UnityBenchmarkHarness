@@ -53,7 +53,7 @@ public class BenchmarkSummary {
 		var summaries = new List<BenchmarkSummary>();
 		for ( var step = 0; step < iterations.Length; step++ ) {
 			var curIters = iterations[step];
-			var fullName = $"{name}<{(new T()).GetType().Name}>x{repeats}";
+			var fullName = $"{name} (repeats: {repeats}, iterations: {curIters})";
 			var results = new List<BenchmarkResult>(repeats);
 			for ( var r = 0; r < repeats; r++ ) {
 				var list = new T();
