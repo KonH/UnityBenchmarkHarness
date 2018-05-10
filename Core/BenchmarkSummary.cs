@@ -13,9 +13,13 @@ namespace UnityBenchmarkHarness {
 
 		internal static BenchmarkSummary CombineResults(string name, ICollection<BenchmarkResult> results) {
 			var measures = new List<BenchmarkMeasure>() {
-				CreateTimeMeause(results),
-				CreateMemMeasure(results),
-				CreateGcMeasure (results),
+				CreateTimeMeause     (results),
+				CreateUsedHeapMeasure(results),
+				CreateMonoHeapMeasure(results),
+				CreateMonoMemMeasure (results),
+				CreateAllocMemMeasure(results),
+				CreateGcMemoryMeasure(results),
+				CreateGcCountMeasure (results),
 			};
 			return new BenchmarkSummary(name, measures);
 		}
@@ -40,12 +44,28 @@ namespace UnityBenchmarkHarness {
 			return CreateMeausure("Time", r => r.Time, results);
 		}
 
-		static BenchmarkMeasure CreateMemMeasure(ICollection<BenchmarkResult> results) {
-			return CreateMeausure("Memory", r => r.Memory, results);
+		static BenchmarkMeasure CreateUsedHeapMeasure(ICollection<BenchmarkResult> results) {
+			return CreateMeausure("Memory:UsedHeap", r => r.UsedHeap, results);
 		}
 
-		static BenchmarkMeasure CreateGcMeasure(ICollection<BenchmarkResult> results) {
-			return CreateMeausure("GC Count", r => r.GCCount, results);
+		static BenchmarkMeasure CreateMonoHeapMeasure(ICollection<BenchmarkResult> results) {
+			return CreateMeausure("Memory:MonoHeapSize", r => r.MonoHeap, results);
+		}
+
+		static BenchmarkMeasure CreateMonoMemMeasure(ICollection<BenchmarkResult> results) {
+			return CreateMeausure("Memory:MonoUsedSize", r => r.MonoMemory, results);
+		}
+
+		static BenchmarkMeasure CreateAllocMemMeasure(ICollection<BenchmarkResult> results) {
+			return CreateMeausure("Memory:TotalAllocatedMemory", r => r.AllocMemory, results);
+		}
+
+		static BenchmarkMeasure CreateGcMemoryMeasure(ICollection<BenchmarkResult> results) {
+			return CreateMeausure("Memory:GC_TotalMemory", r => r.GCCount, results);
+		}
+
+		static BenchmarkMeasure CreateGcCountMeasure(ICollection<BenchmarkResult> results) {
+			return CreateMeausure("Memory:GC_Count", r => r.GCCount, results);
 		}
 	}
 }
