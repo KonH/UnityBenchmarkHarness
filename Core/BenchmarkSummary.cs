@@ -6,22 +6,13 @@ namespace UnityBenchmarkHarness {
 		public string                 Name     { get; }
 		public List<BenchmarkMeasure> Measures { get; }
 
-		public BenchmarkSummary(string name, List<BenchmarkMeasure> measures) {
-			Name     = name;
-			Measures = measures;
-		}
-
-		internal static BenchmarkSummary CombineResults(string name, ICollection<BenchmarkResult> results) {
-			var measures = new List<BenchmarkMeasure>() {
-				CreateTimeMeause     (results),
-				CreateUsedHeapMeasure(results),
-				CreateMonoHeapMeasure(results),
-				CreateMonoMemMeasure (results),
-				CreateAllocMemMeasure(results),
-				CreateGcMemoryMeasure(results),
-				CreateGcCountMeasure (results),
+		internal BenchmarkSummary(string name, ICollection<BenchmarkResult> results) {
+			Name = name;
+			Measures = new List<BenchmarkMeasure>() {
+				CreateStopwatchTimeMeause(results),
+				CreateProfilerTimeMeause (results),
+				CreateGCMemoryMeasure    (results),
 			};
-			return new BenchmarkSummary(name, measures);
 		}
 
 		static BenchmarkMeasure CreateMeausure(string name, Func<BenchmarkResult, double> getter, ICollection<BenchmarkResult> results) {
@@ -40,32 +31,16 @@ namespace UnityBenchmarkHarness {
 			return new BenchmarkMeasure(name, min, max, avg);
 		}
 
-		static BenchmarkMeasure CreateTimeMeause(ICollection<BenchmarkResult> results) {
-			return CreateMeausure("Time", r => r.Time, results);
+		static BenchmarkMeasure CreateStopwatchTimeMeause(ICollection<BenchmarkResult> results) {
+			return CreateMeausure("Stopwatch_Time", r => r.Runtime.StopwatchMs, results);
 		}
 
-		static BenchmarkMeasure CreateUsedHeapMeasure(ICollection<BenchmarkResult> results) {
-			return CreateMeausure("Memory:UsedHeap", r => r.UsedHeap, results);
+		static BenchmarkMeasure CreateProfilerTimeMeause(ICollection<BenchmarkResult> results) {
+			return CreateMeausure("Profiler_TotalTime", r => r.Profiler.TotalTime, results);
 		}
 
-		static BenchmarkMeasure CreateMonoHeapMeasure(ICollection<BenchmarkResult> results) {
-			return CreateMeausure("Memory:MonoHeapSize", r => r.MonoHeap, results);
-		}
-
-		static BenchmarkMeasure CreateMonoMemMeasure(ICollection<BenchmarkResult> results) {
-			return CreateMeausure("Memory:MonoUsedSize", r => r.MonoMemory, results);
-		}
-
-		static BenchmarkMeasure CreateAllocMemMeasure(ICollection<BenchmarkResult> results) {
-			return CreateMeausure("Memory:TotalAllocatedMemory", r => r.AllocMemory, results);
-		}
-
-		static BenchmarkMeasure CreateGcMemoryMeasure(ICollection<BenchmarkResult> results) {
-			return CreateMeausure("Memory:GC_TotalMemory", r => r.GCCount, results);
-		}
-
-		static BenchmarkMeasure CreateGcCountMeasure(ICollection<BenchmarkResult> results) {
-			return CreateMeausure("Memory:GC_Count", r => r.GCCount, results);
+		static BenchmarkMeasure CreateGCMemoryMeasure(ICollection<BenchmarkResult> results) {
+			return CreateMeausure("Profiler_GCMemory", r => r.Profiler.GCMemory, results);
 		}
 	}
 }

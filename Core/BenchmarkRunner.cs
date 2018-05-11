@@ -1,77 +1,58 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.Profiling;
 
 namespace UnityBenchmarkHarness {
 	public class BenchmarkRunner {
-		Stopwatch _timer;
-		long      _startUsedHeap;
-		long      _startHeapSize;
-		long      _startMonoMem;
-		long      _startAllocMem;
-		long      _startGcMem;
-		int       _startGcCount;
+		public string              SelfName { get; }
+		public List<BenchmarkPart> Parts    { get; } = new List<BenchmarkPart>();
 
-		public static List<BenchmarkSummary> Run<TArgument>(
-			string name, int iterations, Action<TArgument> payload, params TArgument[] arguments
+		public bool IsComplete {
+			get {
+				foreach ( var p in Parts ) {
+					foreach ( var name in p.FuncNames ) {
+						if ( !p.ProfilerResults.ContainsKey(name) ) {
+							return false;
+						}
+					}
+				}
+				return true;
+			}
+		}
+
+		public BenchmarkRunner(string name) {
+			SelfName = name;
+		}
+
+		public void Run<TArgument>(
+			int iterations, Action<TArgument> payload, params TArgument[] arguments
 		) {
-			var summaries = new List<BenchmarkSummary>();
+			Parts.Clear();
 			for ( var step = 0; step < arguments.Length; step++ ) {
 				var curArgument = arguments[step];
-				var fullName = $"{name} (iterations: {iterations}, argument: {curArgument})";
-				var results = new List<BenchmarkResult>(iterations);
+				var part = new BenchmarkPart(curArgument.ToString());
 				for ( var r = 0; r < iterations; r++ ) {
-					var localName = $"{name}_a[{curArgument}]_{r}";
-					results.Add(Perform(localName, () => payload(curArgument)));
+					var localName = $"{SelfName}_a[{curArgument}]_{r}";
+					part.FuncNames.Add(localName);
+					part.RuntimeResults.Add(localName, Perform(localName, () => payload(curArgument)));
 				}
-				summaries.Add(BenchmarkSummary.CombineResults(fullName, results));
+				Parts.Add(part);
 			}
-			return summaries;
 		}
 
 		static void PreRunGC() {
 			GC.Collect(0, GCCollectionMode.Forced, true);
 		}
 
-		static BenchmarkRunner Start() {
-			var sw = new Stopwatch();
-			var br = new BenchmarkRunner();
-
+		static RuntimeBenchmarkResult Perform(string name, Action action) {
+			var br = new BenchmarkRun();
 			PreRunGC();
-
-			br._startUsedHeap = Profiler.usedHeapSizeLong;
-			br._startHeapSize = Profiler.GetMonoHeapSizeLong();
-			br._startMonoMem  = Profiler.GetMonoUsedSizeLong();
-			br._startAllocMem = Profiler.GetTotalAllocatedMemoryLong();
-			br._timer         = sw;
-			br._startGcMem    = GC.GetTotalMemory(false);
-			br._startGcCount  = GC.CollectionCount(0);
-
-			sw.Start();
-
-			return br;
-		}
-
-		static BenchmarkResult Perform(string name, Action action) {
+			br.Start();
 			Profiler.BeginSample(name);
-			var b = Start();
 			action();
-			var result = b.Finish();
 			Profiler.EndSample();
-			return result;
-		}
-
-		BenchmarkResult Finish() {
-			_timer.Stop();
-			var monoHeapUsed = Profiler.GetMonoHeapSizeLong()         - _startHeapSize;
-			var heapUsed     = Profiler.usedHeapSizeLong              - _startUsedHeap;
-			var monoMemUsed  = Profiler.GetMonoUsedSizeLong()         - _startMonoMem;
-			var allocMemUsed = Profiler.GetTotalAllocatedMemoryLong() - _startAllocMem;
-			var gcMemUsed    = GC.GetTotalMemory(false)               - _startGcMem;
-			var gcCount      = GC.CollectionCount(0)                  - _startGcCount;
-			return new BenchmarkResult(_timer.Elapsed.TotalMilliseconds, heapUsed, monoHeapUsed, monoMemUsed, allocMemUsed, gcMemUsed, gcCount);
+			br.Stop();
+			return new RuntimeBenchmarkResult(br.TotalMilliseconds);
 		}
 	}
 }
