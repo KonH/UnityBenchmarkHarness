@@ -11,7 +11,7 @@ namespace UnityBenchmarkHarness {
 			get {
 				foreach ( var p in Parts ) {
 					foreach ( var name in p.FuncNames ) {
-						if ( !p.ProfilerResults.ContainsKey(name) ) {
+						if ( !p.Results.ContainsKey(name) ) {
 							return false;
 						}
 					}
@@ -34,7 +34,7 @@ namespace UnityBenchmarkHarness {
 				for ( var r = 0; r < iterations; r++ ) {
 					var localName = $"{SelfName}_a[{curArgument}]_{r}";
 					part.FuncNames.Add(localName);
-					part.RuntimeResults.Add(localName, Perform(localName, () => payload(curArgument)));
+					Perform(localName, () => payload(curArgument));
 				}
 				Parts.Add(part);
 			}
@@ -44,15 +44,11 @@ namespace UnityBenchmarkHarness {
 			GC.Collect(0, GCCollectionMode.Forced, true);
 		}
 
-		static RuntimeBenchmarkResult Perform(string name, Action action) {
-			var br = new BenchmarkRun();
+		static void Perform(string name, Action action) {
 			PreRunGC();
-			br.Start();
 			Profiler.BeginSample(name);
 			action();
 			Profiler.EndSample();
-			br.Stop();
-			return new RuntimeBenchmarkResult(br.TotalMilliseconds);
 		}
 	}
 }

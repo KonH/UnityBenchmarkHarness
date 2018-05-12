@@ -6,10 +6,9 @@ using UnityEditorInternal.Profiling;
 
 namespace UnityBenchmarkHarness {
 	public class BenchmarkPart {
-		public string                                      Argument        { get; }
-		public List<string>                                FuncNames       { get; } = new List<string>();
-		public Dictionary<string, RuntimeBenchmarkResult>  RuntimeResults  { get; } = new Dictionary<string, RuntimeBenchmarkResult> ();
-		public Dictionary<string, ProfilerBenchmarkResult> ProfilerResults { get; } = new Dictionary<string, ProfilerBenchmarkResult>();
+		public string                               Argument  { get; }
+		public List<string>                         FuncNames { get; } = new List<string>();
+		public Dictionary<string, BenchmarkResult>  Results   { get; } = new Dictionary<string, BenchmarkResult> ();
 
 		public BenchmarkPart(string argument) {
 			Argument = argument;
@@ -21,16 +20,8 @@ namespace UnityBenchmarkHarness {
 			double totalTime;
 			ByteSize gcMemory;
 			if ( double.TryParse(totalTimeStr, out totalTime) && ByteSize.TryParse(gcMemoryStr, out gcMemory) ) {
-				ProfilerResults.Add(funcName, new ProfilerBenchmarkResult(totalTime, (int)gcMemory.Bytes));
+				Results.Add(funcName, new BenchmarkResult(totalTime, (int)gcMemory.Bytes));
 			}
-		}
-
-		internal List<BenchmarkResult> GetResults() {
-			var results = new List<BenchmarkResult>();
-			foreach ( var name in FuncNames ) {
-				results.Add(new BenchmarkResult(RuntimeResults[name], ProfilerResults[name]));
-			}
-			return results;
 		}
 	}
 }

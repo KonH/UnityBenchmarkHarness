@@ -67,19 +67,21 @@ namespace UnityBenchmarkHarness {
 
 		// temp
 		void DrawResults() {
-			var summaries = new List<BenchmarkSummary>();
+			var report = new BenchmarkReport();
+			report.Name = "BenchmarkName";
+			report.Summaries = new List<BenchmarkSummary>();
 			foreach ( var runner in Runners ) {
 				foreach ( var part in runner.Parts ) {
-					var results = part.GetResults();
+					var results = part.Results.Values;
 					var summaryName = $"{runner.SelfName}";
 					if ( runner.Parts.Count > 1 ) {
 						summaryName += $"_{part.Argument}";
 					}
 					var summary = new BenchmarkSummary(summaryName, results);
-					summaries.Add(summary);
+					report.Summaries.Add(summary);
 				}
 			}
-			summaries.WriteToConsole();
+			report.ToJson();
 		}
 	}
 }

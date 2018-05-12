@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 
 namespace UnityBenchmarkHarness {
+	[Serializable]
 	public class BenchmarkSummary {
-		public string                 Name     { get; }
-		public List<BenchmarkMeasure> Measures { get; }
+		public string                 Name     = string.Empty;
+		public List<BenchmarkMeasure> Measures = null;
 
 		internal BenchmarkSummary(string name, ICollection<BenchmarkResult> results) {
 			Name = name;
 			Measures = new List<BenchmarkMeasure>() {
-				CreateStopwatchTimeMeause(results),
-				CreateProfilerTimeMeause (results),
+				CreateProfilerTimeMeasure(results),
 				CreateGCMemoryMeasure    (results),
 			};
 		}
@@ -31,16 +31,13 @@ namespace UnityBenchmarkHarness {
 			return new BenchmarkMeasure(name, min, max, avg);
 		}
 
-		static BenchmarkMeasure CreateStopwatchTimeMeause(ICollection<BenchmarkResult> results) {
-			return CreateMeausure("Stopwatch_Time", r => r.Runtime.StopwatchMs, results);
-		}
 
-		static BenchmarkMeasure CreateProfilerTimeMeause(ICollection<BenchmarkResult> results) {
-			return CreateMeausure("Profiler_TotalTime", r => r.Profiler.TotalTime, results);
+		static BenchmarkMeasure CreateProfilerTimeMeasure(ICollection<BenchmarkResult> results) {
+			return CreateMeausure("Profiler_TotalTime", r => r.TotalTime, results);
 		}
 
 		static BenchmarkMeasure CreateGCMemoryMeasure(ICollection<BenchmarkResult> results) {
-			return CreateMeausure("Profiler_GCMemory", r => r.Profiler.GCMemory, results);
+			return CreateMeausure("Profiler_GCMemory", r => r.GCMemory, results);
 		}
 	}
 }
