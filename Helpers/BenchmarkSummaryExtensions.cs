@@ -22,7 +22,7 @@ namespace UnityBenchmarkHarness {
 
 		// temp
 		public static void ToJson(this BenchmarkReport report) {
-			var str = JsonUtility.ToJson(report).Replace("\"", "\\\"");
+			var str = JsonUtility.ToJson(report);
 			Debug.Log(str);
 
 			var text = File.ReadAllText(Path.Combine("Assets", "UnityBenchmarkHarness", "Templates", "index.html"));
