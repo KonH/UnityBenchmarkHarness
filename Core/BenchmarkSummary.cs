@@ -2,22 +2,17 @@
 using System.Collections.Generic;
 
 namespace UnityBenchmarkHarness {
+	[Serializable]
 	public class BenchmarkSummary {
-		public string                 Name     { get; }
-		public List<BenchmarkMeasure> Measures { get; }
+		public string                 Name     = string.Empty;
+		public List<BenchmarkMeasure> Measures = null;
 
-		public BenchmarkSummary(string name, List<BenchmarkMeasure> measures) {
-			Name     = name;
-			Measures = measures;
-		}
-
-		internal static BenchmarkSummary CombineResults(string name, ICollection<BenchmarkResult> results) {
-			var measures = new List<BenchmarkMeasure>() {
-				CreateTimeMeause(results),
-				CreateMemMeasure(results),
-				CreateGcMeasure (results),
+		internal BenchmarkSummary(string name, ICollection<BenchmarkResult> results) {
+			Name = name;
+			Measures = new List<BenchmarkMeasure>() {
+				CreateProfilerTimeMeasure(results),
+				CreateGCMemoryMeasure    (results),
 			};
-			return new BenchmarkSummary(name, measures);
 		}
 
 		static BenchmarkMeasure CreateMeausure(string name, Func<BenchmarkResult, double> getter, ICollection<BenchmarkResult> results) {
@@ -36,16 +31,13 @@ namespace UnityBenchmarkHarness {
 			return new BenchmarkMeasure(name, min, max, avg);
 		}
 
-		static BenchmarkMeasure CreateTimeMeause(ICollection<BenchmarkResult> results) {
-			return CreateMeausure("Time", r => r.Time, results);
+
+		static BenchmarkMeasure CreateProfilerTimeMeasure(ICollection<BenchmarkResult> results) {
+			return CreateMeausure("Profiler_TotalTime", r => r.TotalTime, results);
 		}
 
-		static BenchmarkMeasure CreateMemMeasure(ICollection<BenchmarkResult> results) {
-			return CreateMeausure("Memory", r => r.Memory, results);
-		}
-
-		static BenchmarkMeasure CreateGcMeasure(ICollection<BenchmarkResult> results) {
-			return CreateMeausure("GC Count", r => r.GCCount, results);
+		static BenchmarkMeasure CreateGCMemoryMeasure(ICollection<BenchmarkResult> results) {
+			return CreateMeausure("Profiler_GCMemory", r => r.GCMemory, results);
 		}
 	}
 }
